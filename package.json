@@ -10,7 +10,10 @@
         "build:scss": "node scripts/build-scss.js",
         "clean": "node scripts/clean.js",
         "start": "npm run build:scss && npm run build:scripts",
-        "start:debug": "npm run build && node scripts/start-debug.js"
+        "start:debug": "npm run build && node scripts/start-debug.js",
+        "dev": "concurrently \"npm run watch\" \"npm run serve\"",
+        "watch": "nodemon --watch src -e scss,js,pug --exec \"npm run build\"",
+        "serve": "browser-sync dist -w --no-online"
     },
     "description": "Creative is a stylish one page HTML theme built with Bootstrap.",
     "keywords": [
@@ -38,18 +41,22 @@
         "url": "https://github.com/BlackrockDigital/startbootstrap-creative.git"
     },
     "dependencies": {
-        "bootstrap": "4.4.1"
+        "bootstrap": "^5.3.2",
+        "@popperjs/core": "^2.11.8"
     },
     "devDependencies": {
-        "autoprefixer": "9.7.4",
-        "browser-sync": "2.26.7",
-        "chokidar": "3.3.1",
-        "concurrently": "5.1.0",
-        "postcss": "7.0.27",
-        "prettier": "1.19.1",
-        "pug": "2.0.4",
-        "sass": "1.26.3",
-        "shelljs": "0.8.3",
-        "upath": "1.2.0"
+        "autoprefixer": "^10.4.16",
+        "browser-sync": "^2.29.3",
+        "chokidar": "^3.5.3",
+        "concurrently": "^8.2.2",
+        "cssnano": "^6.0.1",
+        "nodemon": "^3.0.2",
+        "postcss": "^8.4.32",
+        "postcss-cli": "^11.1.0",
+        "prettier": "^3.1.1",
+        "pug": "^3.0.2",
+        "sass": "^1.69.5",
+        "shelljs": "^0.8.5",
+        "upath": "^2.0.1"
     }
 }

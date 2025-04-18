@@ -1,42 +1,47 @@
 'use strict';
-const autoprefixer = require('autoprefixer')
-const fs = require('fs');
-const packageJSON = require('../package.json');
-const upath = require('upath');
-const postcss = require('postcss')
+
 const sass = require('sass');
+const postcss = require('postcss');
+const autoprefixer = require('autoprefixer');
+const cssnano = require('cssnano');
+const upath = require('upath');
 const sh = require('shelljs');
 
-const stylesPath = '../src/scss/styles.scss';
-const destPath = upath.resolve(upath.dirname(__filename), '../dist/css/styles.css');
+const stylesPath = upath.resolve(upath.dirname(__filename), '../src/scss');
+const destPath = upath.resolve(upath.dirname(__filename), '../dist/css');
 
-module.exports = function renderSCSS() {
+sh.mkdir('-p', destPath);
 
-    const results = sass.renderSync({
-        data: entryPoint,
-        includePaths: [
-            upath.resolve(upath.dirname(__filename), '../node_modules')
-        ],
-      });
+const files = sh.find(stylesPath).filter(file => file.match(/\.scss$/));
 
-    const destPathDirname = upath.dirname(destPath);
-    if (!sh.test('-e', destPathDirname)) {
-        sh.mkdir('-p', destPathDirname);
-    }
+files.forEach(file => {
+    const destFile = upath.changeExt(upath.basename(file), '.css');
+    const dest = upath.resolve(destPath, destFile);
+    
+    // Compile SCSS to CSS
+    const result = sass.renderSync({
+        file: file,
+        outputStyle: 'expanded',
+        sourceMap: true
+    });
 
-    postcss([ autoprefixer ]).process(results.css, {from: 'styles.css', to: 'styles.css'}).then(result => {
-        result.warnings().forEach(warn => {
-            console.warn(warn.toString())
+    // Process with PostCSS
+    postcss([autoprefixer, cssnano])
+        .process(result.css, {
+            from: file,
+            to: dest,
+            map: {
+                inline: false,
+                prev: result.map
+            }
         })
-        fs.writeFileSync(destPath, result.css.toString());
-    })
-
-};
-
-const entryPoint = `/*!
-* Start Bootstrap - ${packageJSON.title} v${packageJSON.version} (${packageJSON.homepage})
-* Copyright 2013-${new Date().getFullYear()} ${packageJSON.author}
-* Licensed under ${packageJSON.license} (https://github.com/BlackrockDigital/${packageJSON.name}/blob/master/LICENSE)
-*/
-@import "${stylesPath}"
-`
+        .then(result => {
+            sh.mkdir('-p', upath.dirname(dest));
+            sh.cp('-R', file, dest);
+            sh.cp('-R', file, `${dest}.map`);
+        })
+        .catch(error => {
+            console.error(error);
+            process.exit(1);
+        });
+});
