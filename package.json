@@ -13,7 +13,7 @@
         "start:debug": "npm run build && node scripts/start-debug.js",
         "dev": "concurrently \"npm run watch\" \"npm run serve\"",
         "watch": "nodemon --watch src -e scss,js,pug --exec \"npm run build\"",
-        "serve": "browser-sync dist -w --no-online"
+        "serve": "browser-sync . -w --no-online"
     },
     "description": "Creative is a stylish one page HTML theme built with Bootstrap.",
     "keywords": [
